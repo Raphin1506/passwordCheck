@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificador de Senha</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+    <h1>Verificador de Senha</h1>
+    <form id="passwordForm">
+        <label for="password">Digite sua senha:</label>
+        <input type="password" id="password" name="password" required>
+        <button type="submit">Verificar</button>
+    </form>
+
+    <div id="result" class="result"></div>
+
+    <script>
+        document.getElementById("passwordForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const password = document.getElementById("password").value;
+            
+            // Enviar a senha para o back-end Flask
+            fetch("http://localhost:5000/analyze_password", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById("result");
+                
+                // Limpar o conteúdo anterior
+                resultDiv.innerHTML = "";
+
+                // Exibir as informações recebidas
+                const strengthMessage = document.createElement("p");
+                strengthMessage.innerHTML = `<strong>Força da Senha:</strong> ${data.strength_message}`;
+                resultDiv.appendChild(strengthMessage);
+
+                const pwnedMessage = document.createElement("p");
+                pwnedMessage.innerHTML = `<strong>Resultado da Verificação de Vazamentos:</strong> ${data.pwned_message}`;
+                resultDiv.appendChild(pwnedMessage);
+
+                const weaknessesList = document.createElement("ul");
+                if (data.weaknesses.length > 0) {
+                    data.weaknesses.forEach(weakness => {
+                        const listItem = document.createElement("li");
+                        listItem.textContent = weakness;
+                        weaknessesList.appendChild(listItem);
+                    });
+                } else {
+                    const listItem = document.createElement("li");
+                    listItem.textContent = "Não há fraquezas detectadas.";
+                    weaknessesList.appendChild(listItem);
+                }
+                resultDiv.appendChild(weaknessesList);
+            })
+            .catch(error => {
+                console.error("Erro ao verificar a senha:", error);
+                const resultDiv = document.getElementById("result");
+                resultDiv.innerHTML = "<p>Erro ao verificar a senha, tente novamente.</p>";
+            });
+        });
+    </script>
+</body>
+</html>

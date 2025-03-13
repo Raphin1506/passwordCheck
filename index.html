@@ -23,7 +23,7 @@
             const password = document.getElementById("password").value;
             
             // Enviar a senha para o back-end Flask
-            fetch("http://localhost:5000/analyze_password", {
+            fetch("https://passwordcheck-bvgt.onrender.com/analyze_password", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
